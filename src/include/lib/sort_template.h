@@ -126,6 +126,8 @@
  * overrun, so that judgment seems wrong.
  */
 
+#include <stdfil.h>
+
 #define ST_MAKE_PREFIX(a) CppConcat(a,_)
 #define ST_MAKE_NAME(a,b) ST_MAKE_NAME_(ST_MAKE_PREFIX(a),b)
 #define ST_MAKE_NAME_(a,b) CppConcat(a,b)
@@ -281,6 +283,15 @@ ST_SWAP(ST_POINTER_TYPE * a, ST_POINTER_TYPE * b)
 static inline void
 ST_SWAPN(ST_POINTER_TYPE * a, ST_POINTER_TYPE * b, size_t n)
 {
+	if (sizeof(ST_POINTER_TYPE) == 1)
+	{
+		void* tmp = zgc_alloc(n);
+		memcpy(tmp, a, n);
+		memcpy(a, b, n);
+		memcpy(b, tmp, n);
+		return;
+	}
+	
 	for (size_t i = 0; i < n; ++i)
 		ST_SWAP(&a[i], &b[i]);
 }
