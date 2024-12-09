@@ -102,7 +102,24 @@
 
 #ifdef HAVE_SPINLOCKS	/* skip spinlocks if requested */
 
-#if defined(__GNUC__) || defined(__INTEL_COMPILER)
+#if defined(__PIZLONATOR_WAS_HERE__)
+#define HAS_TEST_AND_SET
+
+typedef unsigned char slock_t;
+
+#define TAS(lock) tas(lock)
+
+static inline int
+tas(volatile slock_t *lock)
+{
+	return __c11_atomic_exchange((slock_t _Atomic*)lock, 1, __ATOMIC_SEQ_CST);
+}
+
+#define S_UNLOCK(lock) __c11_atomic_store((slock_t _Atomic*)(lock), 0, __ATOMIC_SEQ_CST)
+
+#define SPIN_DELAY() do { } while (0)
+
+#elif defined(__GNUC__) || defined(__INTEL_COMPILER)
 /*************************************************************************
  * All the gcc inlines
  * Gcc consistently defines the CPU as __cpu__.
