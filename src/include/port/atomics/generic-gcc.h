@@ -24,10 +24,16 @@
 #error "should be included via atomics.h"
 #endif
 
+#include <stdfil.h>
+
 /*
  * An empty asm block should be a sufficient compiler barrier.
  */
+#ifdef __PIZLONATOR_WAS_HERE__
+#define pg_compiler_barrier_impl()  zcompiler_fence()
+#else
 #define pg_compiler_barrier_impl()	__asm__ __volatile__("" ::: "memory")
+#endif
 
 /*
  * If we're on GCC 4.1.0 or higher, we should be able to get a memory barrier

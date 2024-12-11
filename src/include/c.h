@@ -80,6 +80,7 @@
 #define ZLIB_CONST
 #endif
 
+#include <stdfil.h>
 
 /* ----------------------------------------------------------------
  *				Section 1: compiler characteristics

@@ -1926,7 +1926,7 @@ DecodeXLogRecord(XLogReaderState *state,
 		}
 		if (blk->has_data)
 		{
-			out = (char *) MAXALIGN(out);
+			out = (char *) zmkptr(out, MAXALIGN(out));
 			blk->data = out;
 			memcpy(blk->data, ptr, blk->data_len);
 			ptr += blk->data_len;
@@ -1937,7 +1937,7 @@ DecodeXLogRecord(XLogReaderState *state,
 	/* and finally, the main data */
 	if (decoded->main_data_len > 0)
 	{
-		out = (char *) MAXALIGN(out);
+		out = (char *) zmkptr(out, MAXALIGN(out));
 		decoded->main_data = out;
 		memcpy(decoded->main_data, ptr, decoded->main_data_len);
 		ptr += decoded->main_data_len;

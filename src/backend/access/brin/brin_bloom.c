@@ -463,7 +463,7 @@ brin_bloom_opcinfo(PG_FUNCTION_ARGS)
 	result->oi_nstored = 1;
 	result->oi_regular_nulls = true;
 	result->oi_opaque = (BloomOpaque *)
-		MAXALIGN((char *) result + SizeofBrinOpcInfo(1));
+		zmkptr(result, MAXALIGN((char *) result + SizeofBrinOpcInfo(1)));
 	result->oi_typcache[0] = lookup_type_cache(PG_BRIN_BLOOM_SUMMARYOID, 0);
 
 	PG_RETURN_POINTER(result);

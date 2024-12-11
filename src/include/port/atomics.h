@@ -63,6 +63,7 @@
  * compiler barrier.
  *
  */
+#ifndef __PIZLONATOR_WAS_HERE__
 #if defined(__arm__) || defined(__arm) || defined(__aarch64__)
 #include "port/atomics/arch-arm.h"
 #elif defined(__i386__) || defined(__i386) || defined(__x86_64__)
@@ -71,6 +72,7 @@
 #include "port/atomics/arch-ppc.h"
 #elif defined(__hppa) || defined(__hppa__)
 #include "port/atomics/arch-hppa.h"
+#endif
 #endif
 
 /*

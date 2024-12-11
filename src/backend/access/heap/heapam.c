@@ -2494,7 +2494,7 @@ heap_multi_insert(Relation relation, TupleTableSlot **slots, int ntuples,
 				if (!init)
 					xlrec->offsets[i] = ItemPointerGetOffsetNumber(&heaptup->t_self);
 				/* xl_multi_insert_tuple needs two-byte alignment. */
-				tuphdr = (xl_multi_insert_tuple *) SHORTALIGN(scratchptr);
+				tuphdr = (xl_multi_insert_tuple *) zmkptr(scratchptr, SHORTALIGN(scratchptr));
 				scratchptr = ((char *) tuphdr) + SizeOfMultiInsertTuple;
 
 				tuphdr->t_infomask2 = heaptup->t_data->t_infomask2;
@@ -9706,7 +9706,7 @@ heap_xlog_multi_insert(XLogReaderState *record)
 			if (PageGetMaxOffsetNumber(page) + 1 < offnum)
 				elog(PANIC, "invalid max offset number");
 
-			xlhdr = (xl_multi_insert_tuple *) SHORTALIGN(tupdata);
+			xlhdr = (xl_multi_insert_tuple *) zmkptr(tupdata, SHORTALIGN(tupdata));
 			tupdata = ((char *) xlhdr) + SizeOfMultiInsertTuple;
 
 			newlen = xlhdr->datalen;
