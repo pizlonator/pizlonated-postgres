@@ -5037,7 +5037,7 @@ BootStrapXLOG(void)
 
 	/* page buffer must be aligned suitably for O_DIRECT */
 	buffer = (char *) palloc(XLOG_BLCKSZ + XLOG_BLCKSZ);
-	page = (XLogPageHeader) TYPEALIGN(XLOG_BLCKSZ, buffer);
+	page = (XLogPageHeader) zmkptr(buffer, TYPEALIGN(XLOG_BLCKSZ, buffer));
 	memset(page, 0, XLOG_BLCKSZ);
 
 	/*

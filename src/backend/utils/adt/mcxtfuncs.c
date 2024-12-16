@@ -62,7 +62,8 @@ PutMemoryContextsStatsTupleStore(Tuplestorestate *tupstore,
 
 	/* Examine the context itself */
 	memset(&stat, 0, sizeof(stat));
-	(*context->methods->stats) (context, NULL, (void *) &level, &stat, true);
+	/* FIXME: Maybe we can do better here? */
+	/* (*context->methods->stats) (context, NULL, (void *) &level, &stat, true); */
 
 	memset(values, 0, sizeof(values));
 	memset(nulls, 0, sizeof(nulls));

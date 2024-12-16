@@ -51,6 +51,7 @@ typedef struct MemoryContextCounters
  * to the context struct rather than the struct type itself.
  */
 
+#ifndef __PIZLONATOR_WAS_HERE__
 typedef void (*MemoryStatsPrintFunc) (MemoryContext context, void *passthru,
 									  const char *stats_string,
 									  bool print_to_stderr);
@@ -112,6 +113,7 @@ typedef struct MemoryContextMethods
 	void		(*check) (MemoryContext context);
 #endif
 } MemoryContextMethods;
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 
 
 typedef struct MemoryContextData
@@ -123,7 +125,9 @@ typedef struct MemoryContextData
 	bool		isReset;		/* T = no space alloced since last reset */
 	bool		allowInCritSection; /* allow palloc in critical section */
 	Size		mem_allocated;	/* track memory allocated for this context */
+#ifndef __PIZLONATOR_WAS_HERE__
 	const MemoryContextMethods *methods;	/* virtual function table */
+#endif
 	MemoryContext parent;		/* NULL if no parent (toplevel context) */
 	MemoryContext firstchild;	/* head of linked list of children */
 	MemoryContext prevchild;	/* previous child of same parent */

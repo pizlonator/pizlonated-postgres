@@ -74,6 +74,21 @@
 #include "utils/memutils_internal.h"
 #include "utils/memutils_memorychunk.h"
 
+#ifdef __PIZLONATOR_WAS_HERE__
+
+MemoryContext
+SlabContextCreate(MemoryContext parent,
+				  const char *name,
+				  Size blockSize,
+				  Size chunkSize)
+{
+	MemoryContext result = zgc_alloc(sizeof(MemoryContextData));
+	MemoryContextCreate(result, T_SlabContext, parent, name);
+	return result;
+}
+
+#else /* !defined(__PIZLONATOR_WAS_HERE__) */
+
 #define Slab_BLOCKHDRSZ	MAXALIGN(sizeof(SlabBlock))
 
 #ifdef MEMORY_CONTEXT_CHECKING
@@ -1150,5 +1165,7 @@ SlabCheck(MemoryContext context)
 
 	Assert(nblocks * slab->blockSize == context->mem_allocated);
 }
+
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 
 #endif							/* MEMORY_CONTEXT_CHECKING */

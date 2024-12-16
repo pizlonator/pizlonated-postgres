@@ -89,6 +89,31 @@
 
 #include "utils/memutils_internal.h"
 
+#ifdef __PIZLONATOR_WAS_HERE__
+
+/* If we're in Fil-C, we still maintain the concept of memory contexts, but we offload all
+   allocation to the GC.
+   
+   All context kinds end up having identical behavior.
+   
+   All allocation calls forward to zgc_alloc() and friends.
+   
+   Calling pfree() forwards to zgc_free().
+   
+   Each object knows what MemoryContext it was allocated in, but the context does not know about all
+   of the objects allocated in it.
+   
+   Memory usage stats overestimate memory usage (they count allocated but not freed ignoring the
+   freeing that happens implicitly when a GC occurs). */
+
+/* This is always at the lower of the allocation (i.e. zgetlower(ptr)). */
+typedef struct FilMemoryChunk
+{
+    MemoryContext context;
+} FilMemoryChunk;
+
+#else /* !defined(__PIZLONATOR_WAS_HERE__) */
+
  /*
   * The maximum allowed value that MemoryContexts can store in the value
   * field.  Must be 1 less than a power of 2.
@@ -249,5 +274,7 @@ MemoryChunkGetBlock(MemoryChunk *chunk)
 #undef HdrMaskGetValue
 #undef HdrMaskBlockOffset
 #undef HdrMaskCheckMagic
+
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 
 #endif							/* MEMUTILS_MEMORYCHUNK_H */

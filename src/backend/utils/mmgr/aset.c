@@ -52,6 +52,22 @@
 #include "utils/memutils_internal.h"
 #include "utils/memutils_memorychunk.h"
 
+#ifdef __PIZLONATOR_WAS_HERE__
+
+MemoryContext
+AllocSetContextCreateInternal(MemoryContext parent,
+							  const char *name,
+							  Size minContextSize,
+							  Size initBlockSize,
+							  Size maxBlockSize)
+{
+	MemoryContext result = zgc_alloc(sizeof(MemoryContextData));
+	MemoryContextCreate(result, T_AllocSetContext, parent, name);
+	return result;
+}
+
+#else /* !defined(__PIZLONATOR_WAS_HERE__) */
+
 /*--------------------
  * Chunk freelist k holds chunks of size 1 << (k + ALLOC_MINBITS),
  * for k = 0 .. ALLOCSET_NUM_FREELISTS-1.
@@ -1720,5 +1736,7 @@ AllocSetCheck(MemoryContext context)
 
 	Assert(total_allocated == context->mem_allocated);
 }
+
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 
 #endif							/* MEMORY_CONTEXT_CHECKING */

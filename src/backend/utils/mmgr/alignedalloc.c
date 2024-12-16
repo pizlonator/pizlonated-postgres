@@ -21,6 +21,8 @@
 #include "utils/memdebug.h"
 #include "utils/memutils_memorychunk.h"
 
+#ifndef __PIZLONATOR_WAS_HERE__
+
 /*
  * AlignedAllocFree
 *		Frees allocated memory; memory is removed from its owning context.
@@ -155,3 +157,6 @@ AlignedAllocGetChunkSpace(void *pointer)
 
 	return space;
 }
+
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
+

@@ -29,6 +29,7 @@
 #include "utils/memutils_memorychunk.h"
 
 
+#ifndef __PIZLONATOR_WAS_HERE__
 static void BogusFree(void *pointer);
 static void *BogusRealloc(void *pointer, Size size, int flags);
 static MemoryContext BogusGetChunkContext(void *pointer);
@@ -135,6 +136,7 @@ static const MemoryContextMethods mcxt_methods[] = {
 };
 
 #undef BOGUS_MCTX
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 
 /*
  * CurrentMemoryContext
@@ -175,6 +177,7 @@ static void MemoryContextStatsPrint(MemoryContext context, void *passthru,
 #define AssertNotInCriticalSection(context) \
 	Assert(CritSectionCount == 0 || (context)->allowInCritSection)
 
+#ifndef __PIZLONATOR_WAS_HERE__
 /*
  * Call the given function in the MemoryContextMethods for the memory context
  * type that 'pointer' belongs to.
@@ -231,6 +234,7 @@ GetMemoryChunkHeader(const void *pointer)
 
 	return header;
 }
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 
 /*
  * MemoryContextTraverseNext
@@ -276,6 +280,7 @@ MemoryContextTraverseNext(MemoryContext curr, MemoryContext top)
 	return curr->nextchild;
 }
 
+#ifndef __PIZLONATOR_WAS_HERE__
 /*
  * Support routines to trap use of invalid memory context method IDs
  * (from calling pfree or the like on a bogus pointer).  As a possible
@@ -312,6 +317,7 @@ BogusGetChunkSpace(void *pointer)
 		 pointer, (unsigned long long) GetMemoryChunkHeader(pointer));
 	return 0;					/* keep compiler quiet */
 }
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 
 
 /*****************************************************************************
@@ -416,7 +422,11 @@ MemoryContextResetOnly(MemoryContext context)
 		 * the programmer got it right.
 		 */
 
+#ifdef __PIZLONATOR_WAS_HERE__
+		context->mem_allocated = 0;
+#else
 		context->methods->reset(context);
+#endif
 		context->isReset = true;
 		VALGRIND_DESTROY_MEMPOOL(context);
 		VALGRIND_CREATE_MEMPOOL(context, 0, false);
@@ -525,7 +535,11 @@ MemoryContextDeleteOnly(MemoryContext context)
 	 */
 	context->ident = NULL;
 
+#ifdef __PIZLONATOR_WAS_HERE__
+	zgc_free(context);
+#else
 	context->methods->delete_context(context);
+#endif
 
 	VALGRIND_DESTROY_MEMPOOL(context);
 }
@@ -706,7 +720,11 @@ MemoryContextAllowInCriticalSection(MemoryContext context, bool allow)
 MemoryContext
 GetMemoryChunkContext(void *pointer)
 {
+#ifdef __PIZLONATOR_WAS_HERE__
+	return ((FilMemoryChunk*)zgetlower(pointer))->context;
+#else
 	return MCXT_METHOD(pointer, get_chunk_context) (pointer);
+#endif
 }
 
 /*
@@ -720,7 +738,11 @@ GetMemoryChunkContext(void *pointer)
 Size
 GetMemoryChunkSpace(void *pointer)
 {
+#ifdef __PIZLONATOR_WAS_HERE__
+	return (char*)zgetupper(pointer) - (char*)zgetlower(pointer);
+#else
 	return MCXT_METHOD(pointer, get_chunk_space) (pointer);
+#endif
 }
 
 /*
@@ -750,8 +772,12 @@ MemoryContextIsEmpty(MemoryContext context)
 	 */
 	if (context->firstchild != NULL)
 		return false;
+#if __PIZLONATOR_WAS_HERE__
+	return !context->mem_allocated;
+#else
 	/* Otherwise use the type-specific inquiry */
 	return context->methods->is_empty(context);
+#endif
 }
 
 /*
@@ -790,6 +816,12 @@ MemoryContextMemConsumed(MemoryContext context,
 
 	memset(consumed, 0, sizeof(*consumed));
 
+#ifdef __PIZLONATOR_WAS_HERE__
+	consumed->nblocks = 1;
+	consumed->freechunks = 0;
+	consumed->totalspace = MemoryContextMemAllocated(context, true);
+	consumed->freespace = 0;
+#else
 	/* Examine the context itself */
 	context->methods->stats(context, NULL, NULL, consumed, false);
 
@@ -800,6 +832,7 @@ MemoryContextMemConsumed(MemoryContext context,
 	{
 		curr->methods->stats(curr, NULL, NULL, consumed, false);
 	}
+#endif
 }
 
 /*
@@ -834,8 +867,10 @@ MemoryContextStatsDetail(MemoryContext context,
 
 	memset(&grand_totals, 0, sizeof(grand_totals));
 
+#ifndef __PIZLONATOR_WAS_HERE__
 	MemoryContextStatsInternal(context, 0, max_level, max_children,
 							   &grand_totals, print_to_stderr);
+#endif
 
 	if (print_to_stderr)
 		fprintf(stderr,
@@ -865,6 +900,7 @@ MemoryContextStatsDetail(MemoryContext context,
 	}
 }
 
+#ifndef __PIZLONATOR_WAS_HERE__
 /*
  * MemoryContextStatsInternal
  *		One recursion level for MemoryContextStats
@@ -1063,6 +1099,7 @@ MemoryContextCheck(MemoryContext context)
 	}
 }
 #endif
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 
 /*
  * MemoryContextCreate
@@ -1099,7 +1136,9 @@ MemoryContextCheck(MemoryContext context)
 void
 MemoryContextCreate(MemoryContext node,
 					NodeTag tag,
+#ifndef __PIZLONATOR_WAS_HERE__
 					MemoryContextMethodID method_id,
+#endif
 					MemoryContext parent,
 					const char *name)
 {
@@ -1109,7 +1148,9 @@ MemoryContextCreate(MemoryContext node,
 	/* Initialize all standard fields of memory context header */
 	node->type = tag;
 	node->isReset = true;
+#ifndef __PIZLONATOR_WAS_HERE__
 	node->methods = &mcxt_methods[method_id];
+#endif
 	node->parent = parent;
 	node->firstchild = NULL;
 	node->mem_allocated = 0;
@@ -1169,6 +1210,24 @@ MemoryContextSizeFailure(MemoryContext context, Size size, int flags)
 	elog(ERROR, "invalid memory alloc request size %zu", size);
 }
 
+#ifdef __PIZLONATOR_WAS_HERE__
+static void *
+FilAllocAligned(MemoryContext context, Size size, Size alignto)
+{
+	ZASSERT(alignto >= sizeof(FilMemoryChunk));
+	FilMemoryChunk* chunk = (FilMemoryChunk*)zgc_aligned_alloc(alignto, alignto + size);
+	chunk->context = context;
+	context->mem_allocated += (char*)zgetupper(chunk) - (char*)chunk;
+	return (char*)chunk + alignto;
+}
+
+static void *
+FilAlloc(MemoryContext context, Size size)
+{
+	return FilAllocAligned(context, size, MAXIMUM_ALIGNOF);
+}
+#endif /* __PIZLONATOR_WAS_HERE__ */
+
 /*
  * MemoryContextAlloc
  *		Allocate space within the specified context.
@@ -1186,6 +1245,9 @@ MemoryContextAlloc(MemoryContext context, Size size)
 
 	context->isReset = false;
 
+#ifdef __PIZLONATOR_WAS_HERE__
+	ret = FilAlloc(context, size);
+#else
 	/*
 	 * For efficiency reasons, we purposefully offload the handling of
 	 * allocation failures to the MemoryContextMethods implementation as this
@@ -1197,6 +1259,7 @@ MemoryContextAlloc(MemoryContext context, Size size)
 	 * function instead.
 	 */
 	ret = context->methods->alloc(context, size, 0);
+#endif
 
 	VALGRIND_MEMPOOL_ALLOC(context, ret, size);
 
@@ -1220,7 +1283,11 @@ MemoryContextAllocZero(MemoryContext context, Size size)
 
 	context->isReset = false;
 
+#ifdef __PIZLONATOR_WAS_HERE__
+	ret = FilAlloc(context, size);
+#else
 	ret = context->methods->alloc(context, size, 0);
+#endif
 
 	VALGRIND_MEMPOOL_ALLOC(context, ret, size);
 
@@ -1247,14 +1314,20 @@ MemoryContextAllocExtended(MemoryContext context, Size size, int flags)
 
 	context->isReset = false;
 
+#ifdef __PIZLONATOR_WAS_HERE__
+	ret = FilAlloc(context, size);
+#else
 	ret = context->methods->alloc(context, size, flags);
 	if (unlikely(ret == NULL))
 		return NULL;
+#endif
 
 	VALGRIND_MEMPOOL_ALLOC(context, ret, size);
 
+#ifndef __PIZLONATOR_WAS_HERE__
 	if ((flags & MCXT_ALLOC_ZERO) != 0)
 		MemSetAligned(ret, 0, size);
+#endif
 
 	return ret;
 }
@@ -1324,6 +1397,9 @@ palloc(Size size)
 
 	context->isReset = false;
 
+#ifdef __PIZLONATOR_WAS_HERE__
+	ret = FilAlloc(context, size);
+#else
 	/*
 	 * For efficiency reasons, we purposefully offload the handling of
 	 * allocation failures to the MemoryContextMethods implementation as this
@@ -1338,6 +1414,7 @@ palloc(Size size)
 	/* We expect OOM to be handled by the alloc function */
 	Assert(ret != NULL);
 	VALGRIND_MEMPOOL_ALLOC(context, ret, size);
+#endif
 
 	return ret;
 }
@@ -1354,7 +1431,11 @@ palloc0(Size size)
 
 	context->isReset = false;
 
+#ifdef __PIZLONATOR_WAS_HERE__
+	ret = FilAlloc(context, size);
+#else
 	ret = context->methods->alloc(context, size, 0);
+#endif
 
 	VALGRIND_MEMPOOL_ALLOC(context, ret, size);
 
@@ -1375,16 +1456,22 @@ palloc_extended(Size size, int flags)
 
 	context->isReset = false;
 
+#ifdef __PIZLONATOR_WAS_HERE__
+	ret = FilAlloc(context, size);
+#else
 	ret = context->methods->alloc(context, size, flags);
 	if (unlikely(ret == NULL))
 	{
 		return NULL;
 	}
+#endif
 
 	VALGRIND_MEMPOOL_ALLOC(context, ret, size);
 
+#ifndef __PIZLONATOR_WAS_HERE__
 	if ((flags & MCXT_ALLOC_ZERO) != 0)
 		MemSetAligned(ret, 0, size);
+#endif
 
 	return ret;
 }
@@ -1408,6 +1495,18 @@ void *
 MemoryContextAllocAligned(MemoryContext context,
 						  Size size, Size alignto, int flags)
 {
+#ifdef __PIZLONATOR_WAS_HERE__
+	void	   *ret;
+
+	Assert(MemoryContextIsValid(context));
+	AssertNotInCriticalSection(context);
+
+	context->isReset = false;
+
+	ret = FilAlloc(context, size);
+
+	return ret;
+#else /* !defined(__PIZLONATOR_WAS_HERE__) */
 	MemoryChunk *alignedchunk;
 	Size		alloc_size;
 	void	   *unaligned;
@@ -1454,8 +1553,8 @@ MemoryContextAllocAligned(MemoryContext context,
 	unaligned = MemoryContextAllocExtended(context, alloc_size, flags);
 
 	/* set the aligned pointer */
-	aligned = (void *) TYPEALIGN(alignto, (char *) unaligned +
-								 sizeof(MemoryChunk));
+	aligned = (void *) zmkptr(unaligned, TYPEALIGN(alignto, (char *) unaligned +
+												   sizeof(MemoryChunk)));
 
 	alignedchunk = PointerGetMemoryChunk(aligned);
 
@@ -1489,6 +1588,7 @@ MemoryContextAllocAligned(MemoryContext context,
 	VALGRIND_MAKE_MEM_NOACCESS(alignedchunk, sizeof(MemoryChunk));
 
 	return aligned;
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 }
 
 /*
@@ -1519,9 +1619,13 @@ palloc_aligned(Size size, Size alignto, int flags)
 void
 pfree(void *pointer)
 {
+	MemoryContext context = GetMemoryChunkContext(pointer);
+#ifdef __PIZLONATOR_WAS_HERE__
+	context->mem_allocated -= GetMemoryChunkSpace(pointer);
+	zgc_free(zgetlower(pointer));
+#else /* !defined(__PIZLONATOR_WAS_HERE_) */
 #ifdef USE_VALGRIND
 	MemoryContextMethodID method = GetMemoryChunkMethodID(pointer);
-	MemoryContext context = GetMemoryChunkContext(pointer);
 #endif
 
 	MCXT_METHOD(pointer, free_p) (pointer);
@@ -1530,6 +1634,7 @@ pfree(void *pointer)
 	if (method != MCTX_ALIGNED_REDIRECT_ID)
 		VALGRIND_MEMPOOL_FREE(context, pointer);
 #endif
+#endif /* !defined(__PIZLONATOR_WAS_HERE_) */
 }
 
 /*
@@ -1539,10 +1644,10 @@ pfree(void *pointer)
 void *
 repalloc(void *pointer, Size size)
 {
-#ifdef USE_VALGRIND
+#if defined(USE_VALGRIND)
 	MemoryContextMethodID method = GetMemoryChunkMethodID(pointer);
 #endif
-#if defined(USE_ASSERT_CHECKING) || defined(USE_VALGRIND)
+#if defined(USE_ASSERT_CHECKING) || defined(USE_VALGRIND) || defined(__PIZLONATOR_WAS_HERE__)
 	MemoryContext context = GetMemoryChunkContext(pointer);
 #endif
 	void	   *ret;
@@ -1552,6 +1657,13 @@ repalloc(void *pointer, Size size)
 	/* isReset must be false already */
 	Assert(!context->isReset);
 
+#ifdef __PIZLONATOR_WAS_HERE__
+	context->mem_allocated -= GetMemoryChunkSpace(pointer);
+	Size alignto = (char*)pointer - (char*)zgetlower(pointer);
+	void* newChunk = zgc_aligned_realloc(zgetlower(pointer), alignto, alignto + size);
+	context->mem_allocated += GetMemoryChunkSpace(newChunk);
+	ret = (char*)newChunk + alignto;
+#else
 	/*
 	 * For efficiency reasons, we purposefully offload the handling of
 	 * allocation failures to the MemoryContextMethods implementation as this
@@ -1563,6 +1675,7 @@ repalloc(void *pointer, Size size)
 	 * function instead.
 	 */
 	ret = MCXT_METHOD(pointer, realloc) (pointer, size, 0);
+#endif
 
 #ifdef USE_VALGRIND
 	if (method != MCTX_ALIGNED_REDIRECT_ID)
@@ -1580,6 +1693,9 @@ repalloc(void *pointer, Size size)
 void *
 repalloc_extended(void *pointer, Size size, int flags)
 {
+#ifdef __PIZLONATOR_WAS_HERE__
+	return repalloc(pointer, size);
+#else /* !defined(__PIZLONATOR_WAS_HERE__) */
 #if defined(USE_ASSERT_CHECKING) || defined(USE_VALGRIND)
 	MemoryContext context = GetMemoryChunkContext(pointer);
 #endif
@@ -1607,6 +1723,7 @@ repalloc_extended(void *pointer, Size size, int flags)
 	VALGRIND_MEMPOOL_CHANGE(context, pointer, ret, size);
 
 	return ret;
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 }
 
 /*
@@ -1645,6 +1762,9 @@ MemoryContextAllocHuge(MemoryContext context, Size size)
 
 	context->isReset = false;
 
+#ifdef __PIZLONATOR_WAS_HERE__
+	ret = FilAlloc(context, size);
+#else
 	/*
 	 * For efficiency reasons, we purposefully offload the handling of
 	 * allocation failures to the MemoryContextMethods implementation as this
@@ -1656,6 +1776,7 @@ MemoryContextAllocHuge(MemoryContext context, Size size)
 	 * function instead.
 	 */
 	ret = context->methods->alloc(context, size, MCXT_ALLOC_HUGE);
+#endif
 
 	VALGRIND_MEMPOOL_ALLOC(context, ret, size);
 

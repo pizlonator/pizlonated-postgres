@@ -42,6 +42,21 @@
 #include "utils/memutils_internal.h"
 #include "utils/memutils_memorychunk.h"
 
+#ifdef __PIZLONATOR_WAS_HERE__
+
+MemoryContext
+GenerationContextCreate(MemoryContext parent,
+						const char *name,
+						Size minContextSize,
+						Size initBlockSize,
+						Size maxBlockSize)
+{
+	MemoryContext result = zgc_alloc(sizeof(MemoryContextData));
+	MemoryContextCreate(result, T_GenerationContext, parent, name);
+	return result;
+}
+
+#else /* !defined(__PIZLONATOR_WAS_HERE__) */
 
 #define Generation_BLOCKHDRSZ	MAXALIGN(sizeof(GenerationBlock))
 #define Generation_CHUNKHDRSZ	sizeof(MemoryChunk)
@@ -1201,5 +1216,7 @@ GenerationCheck(MemoryContext context)
 
 	Assert(total_allocated == context->mem_allocated);
 }
+
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 
 #endif							/* MEMORY_CONTEXT_CHECKING */

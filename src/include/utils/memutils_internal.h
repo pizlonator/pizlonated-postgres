@@ -18,6 +18,8 @@
 
 #include "utils/memutils.h"
 
+#ifndef __PIZLONATOR_WAS_HERE__
+
 /* These functions implement the MemoryContext API for AllocSet context. */
 extern void *AllocSetAlloc(MemoryContext context, Size size, int flags);
 extern void AllocSetFree(void *pointer);
@@ -146,6 +148,8 @@ typedef enum MemoryContextMethodID
 #define MEMORY_CONTEXT_METHODID_MASK \
 	((((uint64) 1) << MEMORY_CONTEXT_METHODID_BITS) - 1)
 
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
+
 /*
  * This routine handles the context-type-independent part of memory
  * context creation.  It's intended to be called from context-type-
@@ -153,7 +157,9 @@ typedef enum MemoryContextMethodID
  */
 extern void MemoryContextCreate(MemoryContext node,
 								NodeTag tag,
+#ifndef __PIZLONATOR_WAS_HERE__
 								MemoryContextMethodID method_id,
+#endif
 								MemoryContext parent,
 								const char *name);
 

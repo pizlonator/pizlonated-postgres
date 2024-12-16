@@ -45,6 +45,19 @@
 #include "utils/memutils_memorychunk.h"
 #include "utils/memutils_internal.h"
 
+#ifdef __PIZLONATOR_WAS_HERE__
+
+MemoryContext
+BumpContextCreate(MemoryContext parent, const char *name, Size minContextSize,
+				  Size initBlockSize, Size maxBlockSize)
+{
+	MemoryContext result = zgc_alloc(sizeof(MemoryContextData));
+	MemoryContextCreate(result, T_BumpContext, parent, name);
+	return result;
+}
+
+#else /* !defined(__PIZLONATOR_WAS_HERE__) */
+
 #define Bump_BLOCKHDRSZ	MAXALIGN(sizeof(BumpBlock))
 
 /* No chunk header unless built with MEMORY_CONTEXT_CHECKING */
@@ -804,5 +817,7 @@ BumpCheck(MemoryContext context)
 
 	Assert(total_allocated == context->mem_allocated);
 }
+
+#endif /* !defined(__PIZLONATOR_WAS_HERE__) */
 
 #endif							/* MEMORY_CONTEXT_CHECKING */

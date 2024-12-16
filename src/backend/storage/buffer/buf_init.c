@@ -79,11 +79,12 @@ InitBufferPool(void)
 						&foundDescs);
 
 	/* Align buffer pool on IO page size boundary. */
+	void* allocatedBlock = ShmemInitStruct("Buffer Blocks",
+										   NBuffers * (Size) BLCKSZ + PG_IO_ALIGN_SIZE,
+										   &foundBufs);
 	BufferBlocks = (char *)
-		TYPEALIGN(PG_IO_ALIGN_SIZE,
-				  ShmemInitStruct("Buffer Blocks",
-								  NBuffers * (Size) BLCKSZ + PG_IO_ALIGN_SIZE,
-								  &foundBufs));
+		zmkptr(allocatedBlock, TYPEALIGN(PG_IO_ALIGN_SIZE,
+										 allocatedBlock));
 
 	/* Align condition variables to cacheline boundary. */
 	BufferIOCVArray = (ConditionVariableMinimallyPadded *)
