@@ -362,13 +362,13 @@ ttdummy(PG_FUNCTION_ARGS)
 					 errmsg("ttdummy (%s): you cannot change %s and/or %s columns (use set_ttdummy)",
 							relname, args[0], args[1])));
 
-		if (newoff != TTDUMMY_INFINITY)
+		if (newoff != Int32GetDatum(TTDUMMY_INFINITY))
 		{
 			pfree(relname);		/* allocated in upper executor context */
 			return PointerGetDatum(NULL);
 		}
 	}
-	else if (oldoff != TTDUMMY_INFINITY)	/* DELETE */
+	else if (oldoff != Int32GetDatum(TTDUMMY_INFINITY))	/* DELETE */
 	{
 		pfree(relname);
 		return PointerGetDatum(NULL);
@@ -397,7 +397,7 @@ ttdummy(PG_FUNCTION_ARGS)
 	{
 		cvals[attnum[0] - 1] = newoff;	/* start_date eq current date */
 		cnulls[attnum[0] - 1] = ' ';
-		cvals[attnum[1] - 1] = TTDUMMY_INFINITY;	/* stop_date eq INFINITY */
+		cvals[attnum[1] - 1] = Int32GetDatum(TTDUMMY_INFINITY);	/* stop_date eq INFINITY */
 		cnulls[attnum[1] - 1] = ' ';
 	}
 	else

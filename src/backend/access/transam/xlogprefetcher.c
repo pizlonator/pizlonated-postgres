@@ -91,7 +91,7 @@ typedef enum
  * Type of callback that can decide which block to prefetch next.  For now
  * there is only one.
  */
-typedef LsnReadQueueNextStatus (*LsnReadQueueNextFun) (uintptr_t lrq_private,
+typedef LsnReadQueueNextStatus (*LsnReadQueueNextFun) (void* lrq_private,
 													   XLogRecPtr *lsn);
 
 /*
@@ -103,7 +103,7 @@ typedef LsnReadQueueNextStatus (*LsnReadQueueNextFun) (uintptr_t lrq_private,
 typedef struct LsnReadQueue
 {
 	LsnReadQueueNextFun next;
-	uintptr_t	lrq_private;
+	void	   *lrq_private;
 	uint32		max_inflight;
 	uint32		inflight;
 	uint32		completed;
@@ -193,7 +193,7 @@ static inline bool XLogPrefetcherIsFiltered(XLogPrefetcher *prefetcher,
 											BlockNumber blockno);
 static inline void XLogPrefetcherCompleteFilters(XLogPrefetcher *prefetcher,
 												 XLogRecPtr replaying_lsn);
-static LsnReadQueueNextStatus XLogPrefetcherNextBlock(uintptr_t pgsr_private,
+static LsnReadQueueNextStatus XLogPrefetcherNextBlock(void *pgsr_private,
 													  XLogRecPtr *lsn);
 
 static XLogPrefetchStats *SharedStats;
@@ -201,7 +201,7 @@ static XLogPrefetchStats *SharedStats;
 static inline LsnReadQueue *
 lrq_alloc(uint32 max_distance,
 		  uint32 max_inflight,
-		  uintptr_t lrq_private,
+		  void *lrq_private,
 		  LsnReadQueueNextFun next)
 {
 	LsnReadQueue *lrq;
@@ -458,7 +458,7 @@ XLogPrefetcherComputeStats(XLogPrefetcher *prefetcher)
  * not to prefetch.
  */
 static LsnReadQueueNextStatus
-XLogPrefetcherNextBlock(uintptr_t pgsr_private, XLogRecPtr *lsn)
+XLogPrefetcherNextBlock(void *pgsr_private, XLogRecPtr *lsn)
 {
 	XLogPrefetcher *prefetcher = (XLogPrefetcher *) pgsr_private;
 	XLogReaderState *reader = prefetcher->reader;
@@ -1011,7 +1011,7 @@ XLogPrefetcherReadRecord(XLogPrefetcher *prefetcher, char **errmsg)
 
 		prefetcher->streaming_read = lrq_alloc(max_distance,
 											   max_inflight,
-											   (uintptr_t) prefetcher,
+											   prefetcher,
 											   XLogPrefetcherNextBlock);
 
 		prefetcher->reconfigure_count = XLogPrefetchReconfigureCount;

@@ -1518,7 +1518,7 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
 					/* Convert numstr to Numeric with typmod */
 					Assert(numstr != NULL);
 					noerr = DirectInputFunctionCallSafe(numeric_in, numstr,
-														InvalidOid, dtypmod,
+														InvalidOid, DatumGetInt32(dtypmod),
 														(Node *) &escontext,
 														&numdatum);
 

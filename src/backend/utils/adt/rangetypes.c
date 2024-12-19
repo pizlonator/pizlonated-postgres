@@ -1075,8 +1075,8 @@ range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
 		return r1;
 
 	if (strict &&
-		!DatumGetBool(range_overlaps_internal(typcache, r1, r2)) &&
-		!DatumGetBool(range_adjacent_internal(typcache, r1, r2)))
+		!range_overlaps_internal(typcache, r1, r2) &&
+		!range_adjacent_internal(typcache, r1, r2))
 		ereport(ERROR,
 				(errcode(ERRCODE_DATA_EXCEPTION),
 				 errmsg("result of range union would not be contiguous")));
@@ -1294,7 +1294,7 @@ range_cmp(PG_FUNCTION_ARGS)
 Datum
 range_lt(PG_FUNCTION_ARGS)
 {
-	int			cmp = range_cmp(fcinfo);
+	int			cmp = DatumGetInt32(range_cmp(fcinfo));
 
 	PG_RETURN_BOOL(cmp < 0);
 }
@@ -1302,7 +1302,7 @@ range_lt(PG_FUNCTION_ARGS)
 Datum
 range_le(PG_FUNCTION_ARGS)
 {
-	int			cmp = range_cmp(fcinfo);
+	int			cmp = DatumGetInt32(range_cmp(fcinfo));
 
 	PG_RETURN_BOOL(cmp <= 0);
 }
@@ -1310,7 +1310,7 @@ range_le(PG_FUNCTION_ARGS)
 Datum
 range_ge(PG_FUNCTION_ARGS)
 {
-	int			cmp = range_cmp(fcinfo);
+	int			cmp = DatumGetInt32(range_cmp(fcinfo));
 
 	PG_RETURN_BOOL(cmp >= 0);
 }
@@ -1318,7 +1318,7 @@ range_ge(PG_FUNCTION_ARGS)
 Datum
 range_gt(PG_FUNCTION_ARGS)
 {
-	int			cmp = range_cmp(fcinfo);
+	int			cmp = DatumGetInt32(range_cmp(fcinfo));
 
 	PG_RETURN_BOOL(cmp > 0);
 }
@@ -1380,7 +1380,7 @@ hash_range(PG_FUNCTION_ARGS)
 		upper_hash = 0;
 
 	/* Merge hashes of flags and bounds */
-	result = hash_uint32((uint32) flags);
+	result = DatumGetUInt32(hash_uint32((uint32) flags));
 	result ^= lower_hash;
 	result = pg_rotate_left32(result, 1);
 	result ^= upper_hash;

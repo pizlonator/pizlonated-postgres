@@ -72,8 +72,8 @@ StoreAttrDefault(Relation rel, AttrNumber attnum,
 	attrdefOid = GetNewOidWithIndex(adrel, AttrDefaultOidIndexId,
 									Anum_pg_attrdef_oid);
 	values[Anum_pg_attrdef_oid - 1] = ObjectIdGetDatum(attrdefOid);
-	values[Anum_pg_attrdef_adrelid - 1] = RelationGetRelid(rel);
-	values[Anum_pg_attrdef_adnum - 1] = attnum;
+	values[Anum_pg_attrdef_adrelid - 1] = ObjectIdGetDatum(RelationGetRelid(rel));
+	values[Anum_pg_attrdef_adnum - 1] = ObjectIdGetDatum(attnum);
 	values[Anum_pg_attrdef_adbin - 1] = CStringGetTextDatum(adbin);
 
 	tuple = heap_form_tuple(adrel->rd_att, values, nulls);
@@ -117,8 +117,8 @@ StoreAttrDefault(Relation rel, AttrNumber attnum,
 		Datum		missingval = (Datum) 0;
 		bool		missingIsNull = true;
 
-		valuesAtt[Anum_pg_attribute_atthasdef - 1] = true;
-		replacesAtt[Anum_pg_attribute_atthasdef - 1] = true;
+		valuesAtt[Anum_pg_attribute_atthasdef - 1] = BoolGetDatum(true);
+		replacesAtt[Anum_pg_attribute_atthasdef - 1] = BoolGetDatum(true);
 
 		if (rel->rd_rel->relkind == RELKIND_RELATION && add_column_mode &&
 			!attgenerated)
@@ -151,7 +151,7 @@ StoreAttrDefault(Relation rel, AttrNumber attnum,
 															 defAttStruct->attalign));
 			}
 
-			valuesAtt[Anum_pg_attribute_atthasmissing - 1] = !missingIsNull;
+			valuesAtt[Anum_pg_attribute_atthasmissing - 1] = BoolGetDatum(!missingIsNull);
 			replacesAtt[Anum_pg_attribute_atthasmissing - 1] = true;
 			valuesAtt[Anum_pg_attribute_attmissingval - 1] = missingval;
 			replacesAtt[Anum_pg_attribute_attmissingval - 1] = true;

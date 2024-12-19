@@ -653,9 +653,9 @@ network_abbrev_convert(Datum original, SortSupport ssup)
 
 		/* Must byteswap on little-endian machines */
 #ifndef WORDS_BIGENDIAN
-		ipaddr_datum = pg_bswap32(ipaddr_datum32);
+		ipaddr_datum = UInt32GetDatum(pg_bswap32(ipaddr_datum32));
 #else
-		ipaddr_datum = ipaddr_datum32;
+		ipaddr_datum = UInt32GetDatum(ipaddr_datum32);
 #endif
 
 		/* Initialize result without setting ipfamily bit */
@@ -669,7 +669,7 @@ network_abbrev_convert(Datum original, SortSupport ssup)
 		ipaddr_datum = DatumBigEndianToNative(ipaddr_datum);
 
 		/* Initialize result with ipfamily (most significant) bit set */
-		res = ((Datum) 1) << (SIZEOF_DATUM * BITS_PER_BYTE - 1);
+		res = (Datum) (((uintptr_t) 1) << (SIZEOF_DATUM * BITS_PER_BYTE - 1));
 	}
 
 	/*
@@ -695,14 +695,14 @@ network_abbrev_convert(Datum original, SortSupport ssup)
 	if (ip_bits(authoritative) == 0)
 	{
 		/* Fit as many ipaddr bits as possible into subnet */
-		subnet_bitmask = ((Datum) 0) - 1;
+		subnet_bitmask = (Datum) (((uintptr_t) 0) - 1);
 		network = 0;
 	}
 	else if (ip_bits(authoritative) < SIZEOF_DATUM * BITS_PER_BYTE)
 	{
 		/* Split ipaddr bits between network and subnet */
-		subnet_bitmask = (((Datum) 1) << subnet_size) - 1;
-		network = ipaddr_datum & ~subnet_bitmask;
+		subnet_bitmask = (Datum) ((((uintptr_t) 1) << subnet_size) - 1);
+		network = (Datum) ((uintptr_t) ipaddr_datum & ~(uintptr_t) subnet_bitmask);
 	}
 	else
 	{
@@ -718,7 +718,7 @@ network_abbrev_convert(Datum original, SortSupport ssup)
 		 * IPv4 with 8 byte datums: keep all 32 netmasked bits, netmask size,
 		 * and most significant 25 subnet bits
 		 */
-		Datum		netmask_size = (Datum) ip_bits(authoritative);
+		Datum		netmask_size = (Datum) (uintptr_t) ip_bits(authoritative);
 		Datum		subnet;
 
 		/*
@@ -731,14 +731,14 @@ network_abbrev_convert(Datum original, SortSupport ssup)
 		 * ip_bits(), even though the comparison won't reach the netmask_size
 		 * bits.
 		 */
-		network <<= (ABBREV_BITS_INET4_NETMASK_SIZE +
-					 ABBREV_BITS_INET4_SUBNET);
+		network = (Datum) ((uintptr_t) network << (ABBREV_BITS_INET4_NETMASK_SIZE +
+												   ABBREV_BITS_INET4_SUBNET));
 
 		/* Shift size to make room for subnet bits at the end */
-		netmask_size <<= ABBREV_BITS_INET4_SUBNET;
+		netmask_size = (Datum) ((uintptr_t) netmask_size << ABBREV_BITS_INET4_SUBNET);
 
 		/* Extract subnet bits without shifting them */
-		subnet = ipaddr_datum & subnet_bitmask;
+		subnet = (Datum) ((uintptr_t) ipaddr_datum & (uintptr_t) subnet_bitmask);
 
 		/*
 		 * If we have more than 25 subnet bits, we can't fit everything. Shift
@@ -751,13 +751,13 @@ network_abbrev_convert(Datum original, SortSupport ssup)
 		 * get that far.
 		 */
 		if (subnet_size > ABBREV_BITS_INET4_SUBNET)
-			subnet >>= subnet_size - ABBREV_BITS_INET4_SUBNET;
+			subnet = (Datum) ((uintptr_t) subnet >> (subnet_size - ABBREV_BITS_INET4_SUBNET));
 
 		/*
 		 * Assemble the final abbreviated key without clobbering the ipfamily
 		 * bit that must remain a zero.
 		 */
-		res |= network | netmask_size | subnet;
+		res = (Datum) ((uintptr_t) network | (uintptr_t) netmask_size | (uintptr_t) subnet);
 	}
 	else
 #endif
@@ -767,7 +767,7 @@ network_abbrev_convert(Datum original, SortSupport ssup)
 		 * netmasked bits as will fit in final abbreviated key. Avoid
 		 * clobbering the ipfamily bit that was set earlier.
 		 */
-		res |= network >> 1;
+		res = (Datum) ((uintptr_t) network >> 1);
 	}
 
 	uss->input_count += 1;
@@ -778,9 +778,9 @@ network_abbrev_convert(Datum original, SortSupport ssup)
 		uint32		tmp;
 
 #if SIZEOF_DATUM == 8
-		tmp = (uint32) res ^ (uint32) ((uint64) res >> 32);
+		tmp = (uint32) (uintptr_t) res ^ (uint32) ((uint64) (uintptr_t) res >> 32);
 #else							/* SIZEOF_DATUM != 8 */
-		tmp = (uint32) res;
+		tmp = (uint32) (uintptr_t) res;
 #endif
 
 		addHyperLogLog(&uss->abbr_card, DatumGetUInt32(hash_uint32(tmp)));

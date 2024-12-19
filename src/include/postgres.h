@@ -61,7 +61,7 @@
  * convert between a Datum and the appropriate C type.
  */
 
-typedef uintptr_t Datum;
+typedef void *Datum;
 
 /*
  * A NullableDatum is used in places where both a Datum and its nullness needs
@@ -101,7 +101,7 @@ DatumGetBool(Datum X)
 static inline Datum
 BoolGetDatum(bool X)
 {
-	return (Datum) (X ? 1 : 0);
+	return (Datum) (uintptr_t) (X ? 1 : 0);
 }
 
 /*
@@ -111,7 +111,7 @@ BoolGetDatum(bool X)
 static inline char
 DatumGetChar(Datum X)
 {
-	return (char) X;
+	return (char) (uintptr_t) X;
 }
 
 /*
@@ -121,7 +121,7 @@ DatumGetChar(Datum X)
 static inline Datum
 CharGetDatum(char X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 
 /*
@@ -131,7 +131,7 @@ CharGetDatum(char X)
 static inline Datum
 Int8GetDatum(int8 X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 
 /*
@@ -141,7 +141,7 @@ Int8GetDatum(int8 X)
 static inline uint8
 DatumGetUInt8(Datum X)
 {
-	return (uint8) X;
+	return (uint8) (uintptr_t) X;
 }
 
 /*
@@ -151,7 +151,7 @@ DatumGetUInt8(Datum X)
 static inline Datum
 UInt8GetDatum(uint8 X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 
 /*
@@ -161,7 +161,7 @@ UInt8GetDatum(uint8 X)
 static inline int16
 DatumGetInt16(Datum X)
 {
-	return (int16) X;
+	return (int16) (uintptr_t) X;
 }
 
 /*
@@ -171,7 +171,7 @@ DatumGetInt16(Datum X)
 static inline Datum
 Int16GetDatum(int16 X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 
 /*
@@ -181,7 +181,7 @@ Int16GetDatum(int16 X)
 static inline uint16
 DatumGetUInt16(Datum X)
 {
-	return (uint16) X;
+	return (uint16) (uintptr_t) X;
 }
 
 /*
@@ -191,7 +191,7 @@ DatumGetUInt16(Datum X)
 static inline Datum
 UInt16GetDatum(uint16 X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 
 /*
@@ -201,7 +201,7 @@ UInt16GetDatum(uint16 X)
 static inline int32
 DatumGetInt32(Datum X)
 {
-	return (int32) X;
+	return (int32) (uintptr_t) X;
 }
 
 /*
@@ -211,7 +211,7 @@ DatumGetInt32(Datum X)
 static inline Datum
 Int32GetDatum(int32 X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 
 /*
@@ -221,7 +221,7 @@ Int32GetDatum(int32 X)
 static inline uint32
 DatumGetUInt32(Datum X)
 {
-	return (uint32) X;
+	return (uint32) (uintptr_t) X;
 }
 
 /*
@@ -231,7 +231,7 @@ DatumGetUInt32(Datum X)
 static inline Datum
 UInt32GetDatum(uint32 X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 
 /*
@@ -241,7 +241,7 @@ UInt32GetDatum(uint32 X)
 static inline Oid
 DatumGetObjectId(Datum X)
 {
-	return (Oid) X;
+	return (Oid) (uintptr_t) X;
 }
 
 /*
@@ -251,7 +251,7 @@ DatumGetObjectId(Datum X)
 static inline Datum
 ObjectIdGetDatum(Oid X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 
 /*
@@ -261,7 +261,7 @@ ObjectIdGetDatum(Oid X)
 static inline TransactionId
 DatumGetTransactionId(Datum X)
 {
-	return (TransactionId) X;
+	return (TransactionId) (uintptr_t) X;
 }
 
 /*
@@ -271,7 +271,7 @@ DatumGetTransactionId(Datum X)
 static inline Datum
 TransactionIdGetDatum(TransactionId X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 
 /*
@@ -281,7 +281,7 @@ TransactionIdGetDatum(TransactionId X)
 static inline Datum
 MultiXactIdGetDatum(MultiXactId X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 
 /*
@@ -291,7 +291,7 @@ MultiXactIdGetDatum(MultiXactId X)
 static inline CommandId
 DatumGetCommandId(Datum X)
 {
-	return (CommandId) X;
+	return (CommandId) (uintptr_t) X;
 }
 
 /*
@@ -301,7 +301,7 @@ DatumGetCommandId(Datum X)
 static inline Datum
 CommandIdGetDatum(CommandId X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 
 /*
@@ -385,7 +385,7 @@ static inline int64
 DatumGetInt64(Datum X)
 {
 #ifdef USE_FLOAT8_BYVAL
-	return (int64) X;
+	return (int64) (uintptr_t) X;
 #else
 	return *((int64 *) DatumGetPointer(X));
 #endif
@@ -402,7 +402,7 @@ DatumGetInt64(Datum X)
 static inline Datum
 Int64GetDatum(int64 X)
 {
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 }
 #else
 extern Datum Int64GetDatum(int64 X);
@@ -419,7 +419,7 @@ static inline uint64
 DatumGetUInt64(Datum X)
 {
 #ifdef USE_FLOAT8_BYVAL
-	return (uint64) X;
+	return (uint64) (uintptr_t) X;
 #else
 	return *((uint64 *) DatumGetPointer(X));
 #endif
@@ -436,7 +436,7 @@ static inline Datum
 UInt64GetDatum(uint64 X)
 {
 #ifdef USE_FLOAT8_BYVAL
-	return (Datum) X;
+	return (Datum) (uintptr_t) X;
 #else
 	return Int64GetDatum((int64) X);
 #endif

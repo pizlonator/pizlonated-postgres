@@ -2639,7 +2639,7 @@ multirange_cmp(PG_FUNCTION_ARGS)
 Datum
 multirange_lt(PG_FUNCTION_ARGS)
 {
-	int			cmp = multirange_cmp(fcinfo);
+	int			cmp = DatumGetInt32(multirange_cmp(fcinfo));
 
 	PG_RETURN_BOOL(cmp < 0);
 }
@@ -2647,7 +2647,7 @@ multirange_lt(PG_FUNCTION_ARGS)
 Datum
 multirange_le(PG_FUNCTION_ARGS)
 {
-	int			cmp = multirange_cmp(fcinfo);
+	int			cmp = DatumGetInt32(multirange_cmp(fcinfo));
 
 	PG_RETURN_BOOL(cmp <= 0);
 }
@@ -2655,7 +2655,7 @@ multirange_le(PG_FUNCTION_ARGS)
 Datum
 multirange_ge(PG_FUNCTION_ARGS)
 {
-	int			cmp = multirange_cmp(fcinfo);
+	int			cmp = DatumGetInt32(multirange_cmp(fcinfo));
 
 	PG_RETURN_BOOL(cmp >= 0);
 }
@@ -2663,7 +2663,7 @@ multirange_ge(PG_FUNCTION_ARGS)
 Datum
 multirange_gt(PG_FUNCTION_ARGS)
 {
-	int			cmp = multirange_cmp(fcinfo);
+	int			cmp = DatumGetInt32(multirange_cmp(fcinfo));
 
 	PG_RETURN_BOOL(cmp > 0);
 }
@@ -2833,7 +2833,7 @@ hash_multirange(PG_FUNCTION_ARGS)
 			upper_hash = 0;
 
 		/* Merge hashes of flags and bounds */
-		range_hash = hash_uint32((uint32) flags);
+		range_hash = DatumGetUInt32(hash_uint32((uint32) flags));
 		range_hash ^= lower_hash;
 		range_hash = pg_rotate_left32(range_hash, 1);
 		range_hash ^= upper_hash;

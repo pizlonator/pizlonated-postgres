@@ -2779,7 +2779,7 @@ hash_numeric(PG_FUNCTION_ARGS)
 						  hash_len * sizeof(NumericDigit));
 
 	/* Mix in the weight, via XOR */
-	result = digit_hash ^ weight;
+	result = (Datum) ((uintptr_t) digit_hash ^ weight);
 
 	PG_RETURN_DATUM(result);
 }

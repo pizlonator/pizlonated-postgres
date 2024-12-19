@@ -2033,7 +2033,7 @@ brin_minmax_multi_distance_numeric(PG_FUNCTION_ARGS)
 
 	d = DirectFunctionCall2(numeric_sub, a2, a1);	/* a2 - a1 */
 
-	PG_RETURN_FLOAT8(DirectFunctionCall1(numeric_float8, d));
+	return DirectFunctionCall1(numeric_float8, d);
 }
 
 /*

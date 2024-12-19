@@ -195,7 +195,7 @@ namehashfast(Datum datum)
 {
 	char	   *key = NameStr(*DatumGetName(datum));
 
-	return hash_any((unsigned char *) key, strlen(key));
+	return DatumGetUInt32(hash_any((unsigned char *) key, strlen(key)));
 }
 
 static bool

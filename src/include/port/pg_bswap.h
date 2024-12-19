@@ -151,9 +151,9 @@ pg_bswap64(uint64 x)
 #define		DatumBigEndianToNative(x)	(x)
 #else							/* !WORDS_BIGENDIAN */
 #if SIZEOF_DATUM == 8
-#define		DatumBigEndianToNative(x)	pg_bswap64(x)
+#define		DatumBigEndianToNative(x)	UInt64GetDatum(pg_bswap64(DatumGetUInt64(x)))
 #else							/* SIZEOF_DATUM != 8 */
-#define		DatumBigEndianToNative(x)	pg_bswap32(x)
+#define		DatumBigEndianToNative(x)	UInt32GetDatum(pg_bswap32(DatumGetUInt32(x)))
 #endif							/* SIZEOF_DATUM == 8 */
 #endif							/* WORDS_BIGENDIAN */
 #endif							/* SIZEOF_DATUM */
