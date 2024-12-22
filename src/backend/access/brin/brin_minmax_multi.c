@@ -1871,7 +1871,7 @@ brin_minmax_multi_opcinfo(PG_FUNCTION_ARGS)
 	result->oi_nstored = 1;
 	result->oi_regular_nulls = true;
 	result->oi_opaque = (MinmaxMultiOpaque *)
-		zmkptr(result, MAXALIGN((char *) result + SizeofBrinOpcInfo(1)));
+		MAXALIGN((char *) result + SizeofBrinOpcInfo(1));
 	result->oi_typcache[0] = lookup_type_cache(PG_BRIN_MINMAX_MULTI_SUMMARYOID, 0);
 
 	PG_RETURN_POINTER(result);

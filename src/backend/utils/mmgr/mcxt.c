@@ -1553,8 +1553,8 @@ MemoryContextAllocAligned(MemoryContext context,
 	unaligned = MemoryContextAllocExtended(context, alloc_size, flags);
 
 	/* set the aligned pointer */
-	aligned = (void *) zmkptr(unaligned, TYPEALIGN(alignto, (char *) unaligned +
-												   sizeof(MemoryChunk)));
+	aligned = (void *) TYPEALIGN(alignto, (char *) unaligned +
+								 sizeof(MemoryChunk));
 
 	alignedchunk = PointerGetMemoryChunk(aligned);
 

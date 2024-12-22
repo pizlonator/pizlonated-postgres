@@ -464,14 +464,11 @@ read_stream_begin_relation(int flags,
 	size += MAXIMUM_ALIGNOF * 2;
 	stream = (ReadStream *) palloc(size);
 	memset(stream, 0, offsetof(ReadStream, buffers));
-	void* buffer_pointer = &stream->buffers[queue_size + io_combine_limit - 1];
 	stream->ios = (InProgressIO *)
-		zmkptr(buffer_pointer, MAXALIGN(buffer_pointer));
-	if (per_buffer_data_size > 0) {
-		buffer_pointer = &stream->ios[Max(1, max_ios)];
+		MAXALIGN(&stream->buffers[queue_size + io_combine_limit - 1]);
+	if (per_buffer_data_size > 0)
 		stream->per_buffer_data = (void *)
-			zmkptr(buffer_pointer, MAXALIGN(buffer_pointer));
-	}
+			MAXALIGN(&stream->ios[Max(1, max_ios)]);
 
 #ifdef USE_PREFETCH
 

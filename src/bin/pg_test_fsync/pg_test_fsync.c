@@ -236,7 +236,7 @@ prepare_buf(void)
 	for (ops = 0; ops < DEFAULT_XLOG_SEG_SIZE; ops++)
 		full_buf[ops] = (char) pg_prng_int32(&pg_global_prng_state);
 
-	buf = (char *) zmkptr(full_buf, TYPEALIGN(XLOG_BLCKSZ, full_buf));
+	buf = (char *) TYPEALIGN(XLOG_BLCKSZ, full_buf);
 }
 
 static void

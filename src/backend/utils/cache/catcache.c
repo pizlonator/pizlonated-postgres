@@ -2120,7 +2120,7 @@ CatalogCacheCreateEntry(CatCache *cache, HeapTuple ntp, SysScanDesc scandesc,
 		ct->tuple.t_self = dtp->t_self;
 		ct->tuple.t_tableOid = dtp->t_tableOid;
 		ct->tuple.t_data = (HeapTupleHeader)
-			zmkptr(ct, MAXALIGN(((char *) ct) + sizeof(CatCTup)));
+			MAXALIGN(((char *) ct) + sizeof(CatCTup));
 		/* copy tuple contents */
 		memcpy((char *) ct->tuple.t_data,
 			   (const char *) dtp->t_data,

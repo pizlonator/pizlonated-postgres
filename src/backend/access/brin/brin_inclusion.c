@@ -110,7 +110,7 @@ brin_inclusion_opcinfo(PG_FUNCTION_ARGS)
 	result->oi_nstored = 3;
 	result->oi_regular_nulls = true;
 	result->oi_opaque = (InclusionOpaque *)
-		zmkptr(result, MAXALIGN((char *) result + SizeofBrinOpcInfo(3)));
+		MAXALIGN((char *) result + SizeofBrinOpcInfo(3));
 
 	/* the union */
 	result->oi_typcache[INCLUSION_UNION] =

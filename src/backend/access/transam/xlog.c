@@ -4977,7 +4977,7 @@ XLOGShmemInit(void)
 	 * This simplifies some calculations in XLOG insertion. It is also
 	 * required for O_DIRECT.
 	 */
-	allocptr = (char *) zmkptr(allocptr, TYPEALIGN(XLOG_BLCKSZ, allocptr));
+	allocptr = (char *) TYPEALIGN(XLOG_BLCKSZ, allocptr);
 	XLogCtl->pages = allocptr;
 	memset(XLogCtl->pages, 0, (Size) XLOG_BLCKSZ * XLOGbuffers);
 
@@ -5037,7 +5037,7 @@ BootStrapXLOG(void)
 
 	/* page buffer must be aligned suitably for O_DIRECT */
 	buffer = (char *) palloc(XLOG_BLCKSZ + XLOG_BLCKSZ);
-	page = (XLogPageHeader) zmkptr(buffer, TYPEALIGN(XLOG_BLCKSZ, buffer));
+	page = (XLogPageHeader) TYPEALIGN(XLOG_BLCKSZ, buffer);
 	memset(page, 0, XLOG_BLCKSZ);
 
 	/*
