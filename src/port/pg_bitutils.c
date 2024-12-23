@@ -211,11 +211,17 @@ pg_popcount_masked_choose(const char *buf, int bytes, bits8 mask)
  * pg_popcount32_fast
  *		Return the number of 1 bits set in word
  */
-static inline int
+static inline
+#ifdef __PIZLONATOR_WAS_HERE__
+__attribute__((__target__("popcnt")))
+#endif
+int
 pg_popcount32_fast(uint32 word)
 {
 #ifdef _MSC_VER
 	return __popcnt(word);
+#elif defined(__PIZLONATOR_WAS_HERE__)
+	return __builtin_popcount(word);
 #else
 	uint32		res;
 
@@ -228,11 +234,17 @@ __asm__ __volatile__(" popcntl %1,%0\n":"=q"(res):"rm"(word):"cc");
  * pg_popcount64_fast
  *		Return the number of 1 bits set in word
  */
-static inline int
+static inline
+#ifdef __PIZLONATOR_WAS_HERE__
+__attribute__((__target__("popcnt")))
+#endif
+int
 pg_popcount64_fast(uint64 word)
 {
 #ifdef _MSC_VER
 	return __popcnt64(word);
+#elif defined(__PIZLONATOR_WAS_HERE__)
+	return __builtin_popcountll(word);
 #else
 	uint64		res;
 
