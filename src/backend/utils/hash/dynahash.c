@@ -1017,6 +1017,8 @@ hash_search_with_hash_value(HTAB *hashp,
 
 	while (currBucket != NULL)
 	{
+		if (hashp->isshared)
+			currBucket = ShmemPtr(currBucket);
 		if (currBucket->hashvalue == hashvalue &&
 			match(ELEMENTKEY(currBucket), keyPtr, keysize) == 0)
 			break;
