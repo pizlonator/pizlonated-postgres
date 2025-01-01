@@ -3574,10 +3574,17 @@ stack_is_too_deep(void)
 	char		stack_top_loc;
 	long		stack_depth;
 
+	char       *stack_top_loc_ptr;
+#ifdef HAVE__BUILTIN_FRAME_ADDRESS
+	stack_top_loc_ptr = __builtin_frame_address(0);
+#else
+	stack_top_loc_ptr = &stack_top_loc;
+#endif
+
 	/*
 	 * Compute distance from reference point to my local variables
 	 */
-	stack_depth = (long) (stack_base_ptr - &stack_top_loc);
+	stack_depth = (long) (stack_base_ptr - stack_top_loc_ptr);
 
 	/*
 	 * Take abs value, since stacks grow up on some machines, down on others
