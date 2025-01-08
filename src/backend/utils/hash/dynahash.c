@@ -1017,8 +1017,6 @@ hash_search_with_hash_value(HTAB *hashp,
 
 	while (currBucket != NULL)
 	{
-		if (hashp->isshared)
-			currBucket = ShmemPtr(currBucket);
 		if (currBucket->hashvalue == hashvalue &&
 			match(ELEMENTKEY(currBucket), keyPtr, keysize) == 0)
 			break;
@@ -1654,6 +1652,8 @@ seg_alloc(HTAB *hashp)
 		return NULL;
 
 	MemSet(segp, 0, sizeof(HASHBUCKET) * hashp->ssize);
+	if (hashp->isshared)
+		zsetcap(segp, segp, sizeof(HASHBUCKET) * hashp->ssize);
 
 	return segp;
 }

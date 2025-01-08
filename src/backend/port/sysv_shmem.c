@@ -663,6 +663,8 @@ CreateAnonymousSegment(Size *size)
 						 allocsize) : 0));
 	}
 
+	zsetcap(ptr, ptr, allocsize);
+
 	*size = allocsize;
 	return ptr;
 }

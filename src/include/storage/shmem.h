@@ -23,7 +23,6 @@
 
 #include "utils/hsearch.h"
 
-extern void *ShmemBase;
 
 /* shmem.c */
 extern void InitShmemAccess(void *seghdr);
@@ -56,13 +55,5 @@ typedef struct
 	Size		size;			/* # bytes requested for the structure */
 	Size		allocated_size; /* # bytes actually allocated */
 } ShmemIndexEnt;
-
-static inline void *
-ShmemPtr(void *ptr)
-{
-    void *Result = zmkptr(ShmemBase, (uintptr_t)ptr);
-    ZASSERT(zinbounds(Result));
-    return Result;
-}
 
 #endif							/* SHMEM_H */

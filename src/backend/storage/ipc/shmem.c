@@ -80,7 +80,7 @@ static void *ShmemAllocRaw(Size size, Size *allocated_size);
 
 static PGShmemHeader *ShmemSegHdr;	/* shared mem segment header */
 
-void *ShmemBase;			    /* start address of shared memory */
+static void *ShmemBase;			/* start address of shared memory */
 
 static void *ShmemEnd;			/* end+1 address of shared memory */
 
